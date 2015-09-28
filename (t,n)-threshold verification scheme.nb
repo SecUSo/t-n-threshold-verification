@@ -1,0 +1,1720 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.2' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     57326,       1711]
+NotebookOptionsPosition[     53404,       1577]
+NotebookOutlinePosition[     53748,       1592]
+CellTagsIndexPosition[     53705,       1589]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["\<\
+Secure and Efficient Key Derivation in Portfolio Authentication Schemes Using \
+Blakley Secret Sharing\
+\>", "Title",
+ CellChangeTimes->{3.6513828091794004`*^9}],
+
+Cell["\<\
+This notebook serves as supplemental material to the paper \
+\[OpenCurlyDoubleQuote]Secure and Efficient Key Derivation in Portfolio \
+Authentication Schemes Using Blakley Secret Sharing\[CloseCurlyDoubleQuote] \
+by Peter Mayer and Melanie Volkamer (doi). It implements and illustrates the \
+procedure of the verification scheme along the example of a graphical \
+recognition-based authentication scheme. The first section contains all the \
+parameters needed for the computation. The second section details the six \
+steps neeed to create the public information (analog of e.g. the stored hash \
+in traditional text password settings). The third section details the five \
+steps required to verify the user input.\
+\>", "Text",
+ CellChangeTimes->{{3.6513828234635086`*^9, 3.651382840453573*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Parameters of the schemes", "Section",
+ CellChangeTimes->{{3.651382902632629*^9, 3.651382910008728*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Loading the Finite Fields Package", "Subsection",
+ CellChangeTimes->{{3.6513829777851076`*^9, 3.6513829871447153`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"<<", "FiniteFields`"}]], "Input"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Authentication scheme", "Subsection",
+ CellChangeTimes->{{3.6513829257200394`*^9, 3.6513829293696556`*^9}, {
+  3.651382969464179*^9, 3.6513829735210557`*^9}}],
+
+Cell["\<\
+We assume the graphical recognition-based scheme has 20 different grids to \
+choose from...\
+\>", "Text",
+ CellChangeTimes->{{3.6513838704083138`*^9, 3.6513839025442543`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"numberOfGroups", ":=", "20"}]], "Input",
+ CellChangeTimes->{{3.651383148076877*^9, 3.651383158435192*^9}}],
+
+Cell["...where each of the grids has 16 images.", "Text",
+ CellChangeTimes->{{3.6513839073997154`*^9, 3.651383923840358*^9}}],
+
+Cell[BoxData[
+ RowBox[{"numberOfImagesPerGroup", ":=", "16"}]], "Input",
+ CellChangeTimes->{{3.6513831629404154`*^9, 3.651383180864095*^9}}],
+
+Cell["\<\
+Out of the 20 possible grids, 10 are chosen for actual inclusion in the user\
+\[CloseCurlyQuote]s portfolio.\
+\>", "Text",
+ CellChangeTimes->{{3.6513839289509764`*^9, 3.651383970672727*^9}}],
+
+Cell[BoxData[
+ RowBox[{"portfolioSize", ":=", "10"}]], "Input",
+ CellChangeTimes->{{3.651383182765442*^9, 3.6513831883125772`*^9}}],
+
+Cell["\<\
+Only 2/3 of the portfolio (rounded up) have be entered during each \
+authentication attempt.\
+\>", "Text",
+ CellChangeTimes->{{3.651383979159772*^9, 3.651384024455755*^9}, 
+   3.6513840928634844`*^9}],
+
+Cell[BoxData[
+ RowBox[{"portfolioOverhead", ":=", 
+  RowBox[{"3", "/", "2"}]}]], "Input",
+ CellChangeTimes->{{3.6513832647828627`*^9, 3.651383299704437*^9}}],
+
+Cell[BoxData[
+ RowBox[{"authenticationSize", ":=", 
+  RowBox[{"Ceiling", "[", 
+   RowBox[{"portfolioSize", "/", "portfolioOverhead"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.651383303489133*^9, 3.6513833778598576`*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Hashing", "Subsection",
+ CellChangeTimes->{{3.6513829359212794`*^9, 3.651382936609789*^9}}],
+
+Cell["\<\
+The parameters n and t are given by the autheitcation \
+scheme\[CloseCurlyQuote]s configuration.\
+\>", "Text",
+ CellChangeTimes->{{3.651384046269295*^9, 3.651384089080259*^9}}],
+
+Cell[BoxData[
+ RowBox[{"n", ":=", "portfolioSize"}]], "Input",
+ CellChangeTimes->{{3.651383409411772*^9, 3.6513834139950085`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"t", ":=", "authenticationSize"}]], "Input",
+ CellChangeTimes->{{3.6513834170017557`*^9, 3.6513834209235353`*^9}}],
+
+Cell["\<\
+The parameter p is chosen according to section 5.2 in the paper.\
+\>", "Text",
+ CellChangeTimes->{{3.6513840990949183`*^9, 3.651384110992365*^9}, {
+  3.6513841611192555`*^9, 3.65138417617457*^9}}],
+
+Cell[BoxData[
+ RowBox[{"p", ":=", 
+  RowBox[{"NextPrime", "[", 
+   RowBox[{
+    RowBox[{"16", "^", "7"}], "*", "2"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.651383423841624*^9, 3.6513834254967794`*^9}, {
+  3.651383637320444*^9, 3.651383642441055*^9}, {3.651383722768388*^9, 
+  3.6513837475769367`*^9}, {3.651383844615177*^9, 3.6513838542319946`*^9}}],
+
+Cell["\<\
+To improve readability of the code below, we define a function that hashes \
+the values a predefined number of times.\
+\>", "Text",
+ CellChangeTimes->{{3.6513842080541787`*^9, 3.65138429086978*^9}}],
+
+Cell[BoxData[
+ RowBox[{"iterationCount", ":=", "1"}]], "Input",
+ CellChangeTimes->{{3.651384293760823*^9, 3.6513842988394237`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"HashFunction", "[", 
+   RowBox[{"x_", ",", "salt_", ",", " ", 
+    RowBox[{"iter_:", "iterationCount"}]}], "]"}], ":=", 
+  RowBox[{"Nest", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Hash", "[", 
+      RowBox[{"#", ",", "\"\<SHA256\>\""}], "]"}], "&"}], ",", 
+    RowBox[{"x", "+", "salt"}], ",", "iter"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.6513843008358436`*^9, 3.651384306304723*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Verification scheme", "Subsection",
+ CellChangeTimes->{{3.6519202817316017`*^9, 3.6519202933178525`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"calcMit", ":=", 
+  RowBox[{"Function", "[", " ", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"coefficients", ",", "x", ",", "yi"}], "}"}], ",", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{"yi", "-", 
+       RowBox[{"Dot", "[", 
+        RowBox[{"coefficients", ",", 
+         RowBox[{"Most", "[", "x", "]"}]}], "]"}]}], ")"}], "/", 
+     RowBox[{"Last", "[", "x", "]"}]}]}], "]"}]}]], "Input"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Creation of common secret and shares (Enrollment)", "Section",
+ CellChangeTimes->{{3.651382955051963*^9, 3.6513829646808023`*^9}, {
+  3.6513843124620943`*^9, 3.651384321878789*^9}, {3.6519043806848392`*^9, 
+  3.6519043850898223`*^9}}],
+
+Cell["\<\
+1. Choose the password as subset of tuples of group and image indices with n \
+= 10 elements (<group>, <image>), a hashing salt for the user and a \
+t-dimensional point x at random\
+\>", "Text",
+ CellChangeTimes->{3.651384332400219*^9}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"passwordPortfolio", "=", 
+  RowBox[{"Transpose", "[", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"RandomSample", "[", 
+      RowBox[{
+       RowBox[{"Range", "[", "numberOfGroups", "]"}], ",", "n"}], "]"}], ",", 
+     RowBox[{"RandomInteger", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"1", ",", "numberOfImagesPerGroup"}], "}"}], ",", "n"}], 
+      "]"}]}], "}"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.6513856030208106`*^9, 3.6513856043396873`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"10", ",", "14"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"15", ",", "8"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "10"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"9", ",", "4"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "11"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "4"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"7", ",", "13"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"13", ",", "3"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"5", ",", "8"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"11", ",", "7"}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.6513844982023106`*^9, 3.651385607608006*^9, {3.6513862345423346`*^9, 
+   3.651386253102687*^9}, 3.6519201013042154`*^9, 3.651920303883563*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"salt", "=", 
+  RowBox[{"RandomInteger", "[", 
+   RowBox[{
+    RowBox[{"2", "^", "64"}], "-", "1"}], "]"}]}]], "Input"],
+
+Cell[BoxData["14950252423646258848"], "Output",
+ CellChangeTimes->{
+  3.6513844996172795`*^9, 3.651385607693077*^9, {3.651386234617402*^9, 
+   3.6513862531126795`*^9}, 3.6519201015193677`*^9, 3.651920303952625*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"x", "=", 
+  RowBox[{"Map", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      RowBox[{"GF", "[", "p", "]"}], "[", 
+      RowBox[{"{", "#", "}"}], "]"}], "&"}], ",", 
+    RowBox[{"RandomInteger", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"0", ",", "p"}], "}"}], ",", "t"}], "]"}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   SubscriptBox[
+    RowBox[{"{", "372391941", "}"}], "536870923"], ",", 
+   SubscriptBox[
+    RowBox[{"{", "252626250", "}"}], "536870923"], ",", 
+   SubscriptBox[
+    RowBox[{"{", "11052858", "}"}], "536870923"], ",", 
+   SubscriptBox[
+    RowBox[{"{", "467761114", "}"}], "536870923"], ",", 
+   SubscriptBox[
+    RowBox[{"{", "515224423", "}"}], "536870923"], ",", 
+   SubscriptBox[
+    RowBox[{"{", "464841384", "}"}], "536870923"], ",", 
+   SubscriptBox[
+    RowBox[{"{", "75707740", "}"}], "536870923"]}], "}"}]], "Output",
+ CellChangeTimes->{{3.651384500998273*^9, 3.6513845138243647`*^9}, 
+   3.6513856077070847`*^9, {3.6513862346313987`*^9, 3.651386253126691*^9}, 
+   3.6519201015283756`*^9, 3.651920303959618*^9}]
+}, Open  ]],
+
+Cell["2. Calculate the salted hash of the common secret", "Text",
+ CellChangeTimes->{3.6513844269270573`*^9}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"s", "=", 
+  RowBox[{"HashFunction", "[", 
+   RowBox[{
+    RowBox[{"x", "[", 
+     RowBox[{"[", "1", "]"}], "]"}], ",", "salt"}], "]"}]}]], "Input"],
+
+Cell[BoxData[\
+"5020211502625125026880553801952432898609981265931101002166635355703921056533"\
+], "Output",
+ CellChangeTimes->{
+  3.651384516437206*^9, 3.6513856077191*^9, {3.6513862346464233`*^9, 
+   3.651386253141697*^9}, 3.6519201019306607`*^9, 3.6519203039676228`*^9}]
+}, Open  ]],
+
+Cell["\<\
+3. Calculate salted hash values yi modulo p for each of the image indices y\
+\[CloseCurlyQuote]i to gain the tuples (<group>, <hash>)\
+\>", "Text",
+ CellChangeTimes->{
+  3.6513846894954777`*^9, {3.651385715196397*^9, 3.651385745268505*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"hashTuples", "=", 
+  RowBox[{"Map", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"#", "[", 
+        RowBox[{"[", "1", "]"}], "]"}], ",", 
+       RowBox[{
+        RowBox[{"GF", "[", "p", "]"}], "[", 
+        RowBox[{"{", 
+         RowBox[{"HashFunction", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             RowBox[{"#", "[", 
+              RowBox[{"[", "1", "]"}], "]"}], "*", 
+             RowBox[{"10", "^", 
+              RowBox[{"IntegerLength", "[", 
+               RowBox[{"#", "[", 
+                RowBox[{"[", "2", "]"}], "]"}], "]"}]}]}], "+", 
+            RowBox[{"#", "[", 
+             RowBox[{"[", "2", "]"}], "]"}]}], ",", "salt"}], "]"}], "}"}], 
+        "]"}]}], "}"}], "&"}], ",", "passwordPortfolio"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"10", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "690678628381233807662570498504769643664869145135546468643096353984\
+34255710742", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"15", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "352282356973412682124446241953631828853379114074973678992595922320\
+88705090036", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "421204796029760004882753295917447119648643505910729667896257119824\
+49131862823", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"9", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "130005499724735924013386198611954833113434369071140385775856988576\
+5168869340", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "102877292286154191996412972945145230111753019976309134572886082352\
+752838935764", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "810675390327232450356872617203989361182968874185949668245263892363\
+77343938064", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"7", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "163979982209074351291914398548872478025105286438571125964384379620\
+91758413243", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"13", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "714678037234078331297183830466455436424084432431996218198937252258\
+82122295716", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"5", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "291500452484603698917793343285500581869405005734750713132191838532\
+48485033551", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"11", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "202746174907795954154721970753855835942565094671262339653256818363\
+06286937691", "}"}], "536870923"]}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.6513847242147126`*^9, 3.651385607748122*^9, {3.6513862346804323`*^9, 
+   3.6513862531717186`*^9}, 3.65192010197169*^9, 3.651920304002668*^9}]
+}, Open  ]],
+
+Cell["\<\
+4. Choose t\[Minus]1 coefficients mij modulo p at random for each of the \
+tuples\
+\>", "Text",
+ CellChangeTimes->{3.651384707359157*^9}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"M", "'"}], "=", 
+  RowBox[{"Map", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Map", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{"GF", "[", "p", "]"}], "[", 
+         RowBox[{"{", "#", "}"}], "]"}], "&"}], ",", 
+       RowBox[{"RandomInteger", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"0", ",", "p"}], "}"}], ",", 
+         RowBox[{"t", "-", "1"}]}], "]"}]}], "]"}], "&"}], ",", 
+    RowBox[{"Range", "[", "n", "]"}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "256174570", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "48776596", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "15906086", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "423572958", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "2913918", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "266884657", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "494921965", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "429353338", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "533892331", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "270679640", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "182358848", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "303103985", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "462570943", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "1849878", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "127936713", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "144344523", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "214443337", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "403143912", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "103591004", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "110814006", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "385836978", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "505969223", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "25833888", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "165865108", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "522552619", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "380944351", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "10963650", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "309197484", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "197813503", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "354267004", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "389961683", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "237182087", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "180396334", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "113280037", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "6890027", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "334898787", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "304192754", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "527628854", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "327188829", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "397799026", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "507427984", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "188520954", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "205873471", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "325952587", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "371926525", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "365598219", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "271580112", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "2524262", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "428728320", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "254716352", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "341027351", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "206119483", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "235606626", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "138382920", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "126148606", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "31876264", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "398780019", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "63359870", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "269478267", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "510104929", "}"}], "536870923"]}], "}"}]}], 
+  "}"}]], "Output",
+ CellChangeTimes->{
+  3.6513856077621093`*^9, {3.651386234697462*^9, 3.6513862531847363`*^9}, 
+   3.6519201020007143`*^9, 3.651920304028664*^9}]
+}, Open  ]],
+
+Cell["5. Calculate the value of mi7 using equation 1", "Text",
+ CellChangeTimes->{3.6513862200772495`*^9}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"M", "=", 
+  RowBox[{"Map", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Append", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"M", "'"}], "[", 
+        RowBox[{"[", "#", "]"}], "]"}], ",", 
+       RowBox[{"calcMit", "[", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"M", "'"}], "[", 
+          RowBox[{"[", "#", "]"}], "]"}], ",", "x", ",", 
+         RowBox[{"hashTuples", "[", 
+          RowBox[{"[", 
+           RowBox[{"#", ",", "2"}], "]"}], "]"}]}], "]"}]}], "]"}], "&"}], 
+    ",", 
+    RowBox[{"Range", "[", "n", "]"}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "256174570", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "48776596", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "15906086", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "423572958", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "2913918", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "266884657", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "248433479", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "494921965", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "429353338", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "533892331", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "270679640", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "182358848", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "303103985", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "456479706", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "462570943", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "1849878", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "127936713", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "144344523", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "214443337", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "403143912", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "512472576", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "103591004", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "110814006", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "385836978", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "505969223", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "25833888", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "165865108", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "319624596", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "522552619", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "380944351", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "10963650", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "309197484", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "197813503", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "354267004", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "11144912", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "389961683", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "237182087", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "180396334", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "113280037", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "6890027", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "334898787", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "358875568", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "304192754", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "527628854", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "327188829", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "397799026", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "507427984", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "188520954", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "109294337", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "205873471", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "325952587", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "371926525", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "365598219", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "271580112", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "2524262", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "385932096", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "428728320", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "254716352", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "341027351", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "206119483", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "235606626", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "138382920", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "271645517", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "126148606", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "31876264", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "398780019", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "63359870", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "269478267", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "510104929", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "33438770", "}"}], "536870923"]}], "}"}]}], 
+  "}"}]], "Output",
+ CellChangeTimes->{{3.6513862304165707`*^9, 3.6513862532097473`*^9}, 
+   3.651920102034735*^9, 3.6519203041597767`*^9}]
+}, Open  ]],
+
+Cell["6. Store public information", "Text",
+ CellChangeTimes->{3.651384740687372*^9}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"publicInformation", "=", 
+  RowBox[{"{", 
+   RowBox[{"M", ",", 
+    RowBox[{
+     RowBox[{"Transpose", "[", "hashTuples", "]"}], "[", 
+     RowBox[{"[", "1", "]"}], "]"}], ",", "s", ",", " ", "salt"}], 
+   "}"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       SubscriptBox[
+        RowBox[{"{", "256174570", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "48776596", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "15906086", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "423572958", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "2913918", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "266884657", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "248433479", "}"}], "536870923"]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       SubscriptBox[
+        RowBox[{"{", "494921965", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "429353338", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "533892331", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "270679640", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "182358848", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "303103985", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "456479706", "}"}], "536870923"]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       SubscriptBox[
+        RowBox[{"{", "462570943", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "1849878", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "127936713", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "144344523", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "214443337", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "403143912", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "512472576", "}"}], "536870923"]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       SubscriptBox[
+        RowBox[{"{", "103591004", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "110814006", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "385836978", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "505969223", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "25833888", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "165865108", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "319624596", "}"}], "536870923"]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       SubscriptBox[
+        RowBox[{"{", "522552619", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "380944351", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "10963650", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "309197484", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "197813503", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "354267004", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "11144912", "}"}], "536870923"]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       SubscriptBox[
+        RowBox[{"{", "389961683", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "237182087", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "180396334", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "113280037", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "6890027", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "334898787", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "358875568", "}"}], "536870923"]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       SubscriptBox[
+        RowBox[{"{", "304192754", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "527628854", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "327188829", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "397799026", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "507427984", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "188520954", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "109294337", "}"}], "536870923"]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       SubscriptBox[
+        RowBox[{"{", "205873471", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "325952587", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "371926525", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "365598219", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "271580112", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "2524262", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "385932096", "}"}], "536870923"]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       SubscriptBox[
+        RowBox[{"{", "428728320", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "254716352", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "341027351", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "206119483", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "235606626", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "138382920", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "271645517", "}"}], "536870923"]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       SubscriptBox[
+        RowBox[{"{", "126148606", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "31876264", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "398780019", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "63359870", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "269478267", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "510104929", "}"}], "536870923"], ",", 
+       SubscriptBox[
+        RowBox[{"{", "33438770", "}"}], "536870923"]}], "}"}]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+    "10", ",", "15", ",", "1", ",", "9", ",", "3", ",", "2", ",", "7", ",", 
+     "13", ",", "5", ",", "11"}], "}"}], ",", 
+   "50202115026251250268805538019524328986099812659311010021666353557039210565\
+33", ",", "14950252423646258848"}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.651384750709478*^9, 3.651385607804158*^9, {3.6513862347395*^9, 
+   3.651386253223757*^9}, 3.651920102057751*^9, 3.651920304170767*^9}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Verification of the password (Verification)", "Section",
+ CellChangeTimes->{{3.6513848244457836`*^9, 3.651384830477239*^9}, {
+  3.6519043877377157`*^9, 3.651904390449669*^9}}],
+
+Cell["\<\
+1. Load the stored group indices, choose t = 7 of them at random and display \
+the respective grids as challenges to the user to obtain the tuples (<group>, \
+<image>). We\[CloseCurlyQuote]ll cheat here and just load the right \
+information, boldly assuming the user responded to all challenges \
+successfully.\
+\>", "Text",
+ CellChangeTimes->{
+  3.651384852470299*^9, {3.6519204463898897`*^9, 3.6519204466860933`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"userInput", "=", 
+  RowBox[{"Sort", "[", 
+   RowBox[{"RandomSample", "[", 
+    RowBox[{"passwordPortfolio", ",", " ", "t"}], "]"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"1", ",", "10"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "4"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"5", ",", "8"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"7", ",", "13"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"9", ",", "4"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"10", ",", "14"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"15", ",", "8"}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.651384861774895*^9, 3.6513856139746046`*^9, {3.651386240141305*^9, 
+   3.6513862532377725`*^9}, 3.6519203116490946`*^9}]
+}, Open  ]],
+
+Cell["\<\
+2. Calculate salted hash values yi modulo p for each of the image indices yi \
+to gain the tuples (<group>, <hash>)\
+\>", "Text",
+ CellChangeTimes->{{3.651384872533531*^9, 3.6513848766304574`*^9}, {
+  3.651385526117364*^9, 3.651385530732634*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"verificationHashTuples", "=", 
+  RowBox[{"Map", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"#", "[", 
+        RowBox[{"[", "1", "]"}], "]"}], ",", 
+       RowBox[{
+        RowBox[{"GF", "[", "p", "]"}], "[", 
+        RowBox[{"{", 
+         RowBox[{"HashFunction", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             RowBox[{"#", "[", 
+              RowBox[{"[", "1", "]"}], "]"}], "*", 
+             RowBox[{"10", "^", 
+              RowBox[{"IntegerLength", "[", 
+               RowBox[{"#", "[", 
+                RowBox[{"[", "2", "]"}], "]"}], "]"}]}]}], "+", 
+            RowBox[{"#", "[", 
+             RowBox[{"[", "2", "]"}], "]"}]}], ",", "salt"}], "]"}], "}"}], 
+        "]"}]}], "}"}], "&"}], ",", "userInput"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"1", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "421204796029760004882753295917447119648643505910729667896257119824\
+49131862823", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "810675390327232450356872617203989361182968874185949668245263892363\
+77343938064", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"5", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "291500452484603698917793343285500581869405005734750713132191838532\
+48485033551", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"7", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "163979982209074351291914398548872478025105286438571125964384379620\
+91758413243", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"9", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "130005499724735924013386198611954833113434369071140385775856988576\
+5168869340", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"10", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "690678628381233807662570498504769643664869145135546468643096353984\
+34255710742", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"15", ",", 
+     SubscriptBox[
+      RowBox[{
+      "{", "352282356973412682124446241953631828853379114074973678992595922320\
+88705090036", "}"}], "536870923"]}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.651384893966728*^9, 3.651385614059663*^9, {3.6513862402293653`*^9, 
+   3.6513862532617817`*^9}, 3.6519203117281494`*^9}]
+}, Open  ]],
+
+Cell["\<\
+3. Load the stored coefficients mij corresponding to the chosen group indices \
+to form the linear system of equations 2.\
+\>", "Text",
+ CellChangeTimes->{{3.6513849114221196`*^9, 3.6513849315493984`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Mveri", "=", 
+  RowBox[{
+   RowBox[{"publicInformation", "[", 
+    RowBox[{"[", "1", "]"}], "]"}], "[", 
+   RowBox[{"[", 
+    RowBox[{"Flatten", "[", 
+     RowBox[{"Map", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Position", "[", 
+         RowBox[{
+          RowBox[{"publicInformation", "[", 
+           RowBox[{"[", "2", "]"}], "]"}], ",", 
+          RowBox[{"#", "[", 
+           RowBox[{"[", "1", "]"}], "]"}]}], "]"}], "&"}], ",", "userInput"}],
+       "]"}], "]"}], "]"}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "462570943", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "1849878", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "127936713", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "144344523", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "214443337", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "403143912", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "512472576", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "389961683", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "237182087", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "180396334", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "113280037", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "6890027", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "334898787", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "358875568", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "428728320", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "254716352", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "341027351", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "206119483", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "235606626", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "138382920", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "271645517", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "304192754", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "527628854", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "327188829", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "397799026", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "507427984", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "188520954", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "109294337", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "103591004", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "110814006", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "385836978", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "505969223", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "25833888", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "165865108", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "319624596", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "256174570", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "48776596", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "15906086", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "423572958", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "2913918", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "266884657", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "248433479", "}"}], "536870923"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     SubscriptBox[
+      RowBox[{"{", "494921965", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "429353338", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "533892331", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "270679640", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "182358848", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "303103985", "}"}], "536870923"], ",", 
+     SubscriptBox[
+      RowBox[{"{", "456479706", "}"}], "536870923"]}], "}"}]}], 
+  "}"}]], "Output",
+ CellChangeTimes->{
+  3.6513849203564577`*^9, 3.6513856140777073`*^9, {3.651386240246379*^9, 
+   3.651386253275793*^9}, 3.651920311738157*^9}]
+}, Open  ]],
+
+Cell["\<\
+4. Solve the liner system of equations for x and calculate the salted hash of \
+x1\
+\>", "Text",
+ CellChangeTimes->{
+  3.6513849443505926`*^9, {3.6513849859570856`*^9, 3.6513849863423615`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"x", "'"}], "=", 
+  RowBox[{"LinearSolve", "[", 
+   RowBox[{"Mveri", ",", 
+    RowBox[{
+     RowBox[{"Transpose", "[", "verificationHashTuples", "]"}], "[", 
+     RowBox[{"[", "2", "]"}], "]"}]}], "]"}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   SubscriptBox[
+    RowBox[{"{", "372391941", "}"}], "536870923"], ",", 
+   SubscriptBox[
+    RowBox[{"{", "252626250", "}"}], "536870923"], ",", 
+   SubscriptBox[
+    RowBox[{"{", "11052858", "}"}], "536870923"], ",", 
+   SubscriptBox[
+    RowBox[{"{", "467761114", "}"}], "536870923"], ",", 
+   SubscriptBox[
+    RowBox[{"{", "515224423", "}"}], "536870923"], ",", 
+   SubscriptBox[
+    RowBox[{"{", "464841384", "}"}], "536870923"], ",", 
+   SubscriptBox[
+    RowBox[{"{", "75707740", "}"}], "536870923"]}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.651384972466308*^9, 3.6513856141277127`*^9, {3.6513862402944117`*^9, 
+   3.651386253316821*^9}, 3.651920311776186*^9}]
+}, Open  ]],
+
+Cell["\<\
+5. Compare the hash of x1 with the stored hash of the common secret\
+\>", "Text",
+ CellChangeTimes->{3.6513849603919497`*^9}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"s", "\[Equal]", 
+  RowBox[{"HashFunction", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"x", "'"}], "[", 
+     RowBox[{"[", "1", "]"}], "]"}], ",", "salt"}], "]"}]}]], "Input"],
+
+Cell[BoxData["True"], "Output",
+ CellChangeTimes->{
+  3.651384976383088*^9, 3.651385614139736*^9, {3.6513862403044195`*^9, 
+   3.651386253326847*^9}, 3.6519203117822065`*^9}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Functions used for efficiency evalaution", "Section",
+ CellChangeTimes->{{3.651921702281767*^9, 3.651921729087843*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Naive scheme", "Subsection",
+ CellChangeTimes->{{3.6519217423603067`*^9, 3.6519217465052524`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"CreateNaive", ":=", 
+  RowBox[{"Function", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"portfolio", ",", "t"}], "}"}], ",", 
+    RowBox[{"Map", "[", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"HashFunction", "[", 
+        RowBox[{
+         RowBox[{"Sort", "[", "#", "]"}], ",", "salt"}], "]"}], "&"}], ",", 
+      RowBox[{"Subsets", "[", 
+       RowBox[{"portfolio", ",", 
+        RowBox[{"{", "t", "}"}]}], "]"}]}], "]"}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.651921997154113*^9, 3.65192203304971*^9}}],
+
+Cell[BoxData[
+ RowBox[{"VerifyNaive", ":=", 
+  RowBox[{"Function", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"password", ",", "hashTable"}], "}"}], ",", 
+    RowBox[{
+     RowBox[{"pwdHash", "=", 
+      RowBox[{"HashFunction", "[", 
+       RowBox[{"password", ",", " ", "salt"}], "]"}]}], ";", 
+     RowBox[{"Catch", "[", 
+      RowBox[{
+       RowBox[{"For", "[", 
+        RowBox[{
+         RowBox[{"i", "=", "1"}], ",", 
+         RowBox[{"i", "<=", 
+          RowBox[{"Length", "[", "hashTable", "]"}]}], ",", 
+         RowBox[{"i", "++"}], ",", 
+         RowBox[{"If", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"hashTable", "[", 
+             RowBox[{"[", "i", "]"}], "]"}], "\[Equal]", "pwdHash"}], ",", 
+           RowBox[{"Throw", "[", "True", "]"}]}], "]"}]}], "]"}], ";", 
+       RowBox[{"Throw", "[", "False", "]"}]}], "]"}]}]}], "]"}]}]], "Input"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["(t,n)-threshold verification scheme", "Subsection",
+ CellChangeTimes->{{3.651921771744894*^9, 3.6519217986320477`*^9}}],
+
+Cell["Function to create the public information", "Text",
+ CellChangeTimes->{{3.6519218218325806`*^9, 3.6519218359046307`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"CreateTNthreshold", ":=", 
+  RowBox[{"Function", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"let", ",", "len", ",", "portfolio", ",", "p"}], "}"}], ",", 
+    RowBox[{
+     RowBox[{"x", "=", 
+      RowBox[{"Map", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{
+          RowBox[{"GF", "[", "p", "]"}], "[", 
+          RowBox[{"{", "#", "}"}], "]"}], "&"}], ",", 
+        RowBox[{"RandomInteger", "[", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"1", ",", 
+            RowBox[{"p", "-", "1"}]}], "}"}], ",", "let"}], "]"}]}], "]"}]}], 
+     ";", "\[IndentingNewLine]", 
+     RowBox[{"hashTuples", "=", 
+      RowBox[{"Map", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"#", "[", 
+            RowBox[{"[", "1", "]"}], "]"}], ",", 
+           RowBox[{
+            RowBox[{"GF", "[", "p", "]"}], "[", 
+            RowBox[{"{", 
+             RowBox[{"HashFunction", "[", 
+              RowBox[{
+               RowBox[{
+                RowBox[{
+                 RowBox[{"#", "[", 
+                  RowBox[{"[", "1", "]"}], "]"}], "*", 
+                 RowBox[{"10", "^", 
+                  RowBox[{"IntegerLength", "[", 
+                   RowBox[{"#", "[", 
+                    RowBox[{"[", "2", "]"}], "]"}], "]"}]}]}], "+", 
+                RowBox[{"#", "[", 
+                 RowBox[{"[", "2", "]"}], "]"}]}], ",", "salt"}], "]"}], 
+             "}"}], "]"}]}], "}"}], "&"}], ",", "portfolio"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"M", "'"}], "=", 
+      RowBox[{"Map", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"Map", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             RowBox[{"GF", "[", "p", "]"}], "[", 
+             RowBox[{"{", "#", "}"}], "]"}], "&"}], ",", 
+           RowBox[{"RandomInteger", "[", 
+            RowBox[{
+             RowBox[{"{", 
+              RowBox[{"1", ",", 
+               RowBox[{"p", "-", "1"}]}], "}"}], ",", 
+             RowBox[{"let", "-", "1"}]}], "]"}]}], "]"}], "&"}], ",", 
+        RowBox[{"Range", "[", "len", "]"}]}], "]"}]}], ";", 
+     RowBox[{"If", "[", 
+      RowBox[{
+       RowBox[{"Apply", "[", 
+        RowBox[{"Or", ",", 
+         RowBox[{"Map", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             RowBox[{"Length", "[", 
+              RowBox[{"Tally", "[", 
+               RowBox[{"Apply", "[", 
+                RowBox[{"Divide", ",", 
+                 RowBox[{
+                  RowBox[{"Transpose", "[", 
+                   RowBox[{"Append", "[", 
+                    RowBox[{
+                    RowBox[{"Transpose", "[", 
+                    RowBox[{"M", "'"}], "]"}], ",", 
+                    RowBox[{"hashTuples", "[", 
+                    RowBox[{"[", 
+                    RowBox[{"All", ",", "2"}], "]"}], "]"}]}], "]"}], "]"}], 
+                  "[", 
+                  RowBox[{"[", "#", "]"}], "]"}]}], "]"}], "]"}], "]"}], 
+             "\[Equal]", "1"}], "&"}], ",", 
+           RowBox[{"Subsets", "[", 
+            RowBox[{
+             RowBox[{"Range", "[", "len", "]"}], ",", 
+             StyleBox[
+              RowBox[{"{", "2", "}"}], "Input"]}], "]"}]}], "]"}]}], "]"}], 
+       ",", 
+       RowBox[{"CreateTNthreshold", "[", 
+        RowBox[{"let", ",", "len", ",", "portfolio", ",", "p"}], "]"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"Map", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"Append", "[", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"M", "'"}], "[", 
+               RowBox[{"[", "#", "]"}], "]"}], ",", 
+              RowBox[{"calcMit", "[", 
+               RowBox[{
+                RowBox[{
+                 RowBox[{"M", "'"}], "[", 
+                 RowBox[{"[", "#", "]"}], "]"}], ",", "x", ",", 
+                RowBox[{"hashTuples", "[", 
+                 RowBox[{"[", 
+                  RowBox[{"#", ",", "2"}], "]"}], "]"}]}], "]"}]}], "]"}], 
+            "&"}], ",", 
+           RowBox[{"Range", "[", "len", "]"}]}], "]"}], ",", 
+         RowBox[{
+          RowBox[{"Transpose", "[", "hashTuples", "]"}], "[", 
+          RowBox[{"[", "1", "]"}], "]"}], ",", 
+         RowBox[{"HashFunction", "[", 
+          RowBox[{
+           RowBox[{"x", "[", 
+            RowBox[{"[", "1", "]"}], "]"}], ",", "salt"}], "]"}], ",", 
+         "salt"}], "}"}]}], "]"}]}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.651921876288574*^9, 3.6519219162023993`*^9}}],
+
+Cell["Function to verify entered password", "Text",
+ CellChangeTimes->{{3.6519218414645677`*^9, 3.6519218682968874`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"VerifiyTNthreshold", ":=", 
+  RowBox[{"Function", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"password", ",", "publicInformation", ",", "p"}], "}"}], ",", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"x", "'"}], "=", 
+      RowBox[{"LinearSolve", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"publicInformation", "[", 
+          RowBox[{"[", "1", "]"}], "]"}], "[", 
+         RowBox[{"[", 
+          RowBox[{"Flatten", "[", 
+           RowBox[{"Map", "[", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"Position", "[", 
+               RowBox[{
+                RowBox[{"publicInformation", "[", 
+                 RowBox[{"[", "2", "]"}], "]"}], ",", 
+                RowBox[{"#", "[", 
+                 RowBox[{"[", "1", "]"}], "]"}]}], "]"}], "&"}], ",", 
+             "password"}], "]"}], "]"}], "]"}], "]"}], ",", 
+        RowBox[{
+         RowBox[{"Transpose", "[", 
+          RowBox[{"Map", "[", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"#", "[", 
+                RowBox[{"[", "1", "]"}], "]"}], ",", 
+               RowBox[{
+                RowBox[{"GF", "[", "p", "]"}], "[", 
+                RowBox[{"{", 
+                 RowBox[{"HashFunction", "[", 
+                  RowBox[{
+                   RowBox[{
+                    RowBox[{
+                    RowBox[{"#", "[", 
+                    RowBox[{"[", "1", "]"}], "]"}], "*", 
+                    RowBox[{"10", "^", 
+                    RowBox[{"IntegerLength", "[", 
+                    RowBox[{"#", "[", 
+                    RowBox[{"[", "2", "]"}], "]"}], "]"}]}]}], "+", 
+                    RowBox[{"#", "[", 
+                    RowBox[{"[", "2", "]"}], "]"}]}], ",", "salt"}], "]"}], 
+                 "}"}], "]"}]}], "}"}], "&"}], ",", "password"}], "]"}], 
+          "]"}], "[", 
+         RowBox[{"[", "2", "]"}], "]"}]}], "]"}]}], ";", 
+     RowBox[{
+      RowBox[{"HashFunction", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"x", "'"}], "[", 
+         RowBox[{"[", "1", "]"}], "]"}], ",", "salt"}], "]"}], "\[Equal]", 
+      RowBox[{"publicInformation", "[", 
+       RowBox[{"[", "3", "]"}], "]"}]}]}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.6519218886504107`*^9, 3.6519218928263845`*^9}}]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1920, 1117},
+WindowMargins->{{-8, Automatic}, {Automatic, -8}},
+FrontEndVersion->"10.2 for Microsoft Windows (64-bit) (July 29, 2015)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 171, 4, 101, "Title"],
+Cell[754, 28, 806, 12, 68, "Text"],
+Cell[CellGroupData[{
+Cell[1585, 44, 110, 1, 70, "Section"],
+Cell[CellGroupData[{
+Cell[1720, 49, 125, 1, 49, "Subsection"],
+Cell[1848, 52, 57, 1, 31, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[1942, 58, 164, 2, 49, "Subsection"],
+Cell[2109, 62, 185, 4, 30, "Text"],
+Cell[2297, 68, 130, 2, 31, "Input"],
+Cell[2430, 72, 125, 1, 30, "Text"],
+Cell[2558, 75, 140, 2, 31, "Input"],
+Cell[2701, 79, 200, 4, 30, "Text"],
+Cell[2904, 85, 131, 2, 31, "Input"],
+Cell[3038, 89, 210, 5, 30, "Text"],
+Cell[3251, 96, 157, 3, 31, "Input"],
+Cell[3411, 101, 221, 4, 31, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[3669, 110, 97, 1, 49, "Subsection"],
+Cell[3769, 113, 186, 4, 30, "Text"],
+Cell[3958, 119, 130, 2, 31, "Input"],
+Cell[4091, 123, 137, 2, 31, "Input"],
+Cell[4231, 127, 206, 4, 30, "Text"],
+Cell[4440, 133, 352, 7, 31, "Input"],
+Cell[4795, 142, 208, 4, 30, "Text"],
+Cell[5006, 148, 131, 2, 31, "Input"],
+Cell[5140, 152, 429, 11, 31, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[5606, 168, 111, 1, 49, "Subsection"],
+Cell[5720, 171, 419, 12, 31, "Input"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[6188, 189, 240, 3, 70, "Section"],
+Cell[6431, 194, 246, 5, 30, "Text"],
+Cell[CellGroupData[{
+Cell[6702, 203, 494, 13, 31, "Input"],
+Cell[7199, 218, 818, 25, 31, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[8054, 248, 142, 4, 31, "Input"],
+Cell[8199, 254, 214, 3, 31, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[8450, 262, 337, 11, 31, "Input"],
+Cell[8790, 275, 763, 19, 31, "Output"]
+}, Open  ]],
+Cell[9568, 297, 109, 1, 30, "Text"],
+Cell[CellGroupData[{
+Cell[9702, 302, 171, 5, 31, "Input"],
+Cell[9876, 309, 272, 5, 31, "Output"]
+}, Open  ]],
+Cell[10163, 317, 250, 5, 30, "Text"],
+Cell[CellGroupData[{
+Cell[10438, 326, 825, 24, 31, "Input"],
+Cell[11266, 352, 2263, 65, 112, "Output"]
+}, Open  ]],
+Cell[13544, 420, 147, 4, 30, "Text"],
+Cell[CellGroupData[{
+Cell[13716, 428, 523, 17, 31, "Input"],
+Cell[14242, 447, 5257, 146, 212, "Output"]
+}, Open  ]],
+Cell[19514, 596, 106, 1, 30, "Text"],
+Cell[CellGroupData[{
+Cell[19645, 601, 588, 19, 31, "Input"],
+Cell[20236, 622, 6010, 165, 212, "Output"]
+}, Open  ]],
+Cell[26261, 790, 85, 1, 30, "Text"],
+Cell[CellGroupData[{
+Cell[26371, 795, 248, 7, 31, "Input"],
+Cell[26622, 804, 6679, 173, 232, "Output"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[33350, 983, 181, 2, 70, "Section"],
+Cell[33534, 987, 429, 8, 30, "Text"],
+Cell[CellGroupData[{
+Cell[33988, 999, 174, 4, 31, "Input"],
+Cell[34165, 1005, 616, 19, 31, "Output"]
+}, Open  ]],
+Cell[34796, 1027, 256, 5, 30, "Text"],
+Cell[CellGroupData[{
+Cell[35077, 1036, 829, 24, 31, "Input"],
+Cell[35909, 1062, 1627, 47, 92, "Output"]
+}, Open  ]],
+Cell[37551, 1112, 215, 4, 30, "Text"],
+Cell[CellGroupData[{
+Cell[37791, 1120, 532, 16, 31, "Input"],
+Cell[38326, 1138, 4285, 118, 152, "Output"]
+}, Open  ]],
+Cell[42626, 1259, 203, 5, 30, "Text"],
+Cell[CellGroupData[{
+Cell[42854, 1268, 249, 7, 31, "Input"],
+Cell[43106, 1277, 712, 19, 31, "Output"]
+}, Open  ]],
+Cell[43833, 1299, 135, 3, 30, "Text"],
+Cell[CellGroupData[{
+Cell[43993, 1306, 199, 6, 31, "Input"],
+Cell[44195, 1314, 174, 3, 31, "Output"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[44418, 1323, 125, 1, 70, "Section"],
+Cell[CellGroupData[{
+Cell[44568, 1328, 104, 1, 49, "Subsection"],
+Cell[44675, 1331, 540, 15, 31, "Input"],
+Cell[45218, 1348, 887, 24, 31, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[46142, 1377, 125, 1, 49, "Subsection"],
+Cell[46270, 1380, 127, 1, 30, "Text"],
+Cell[46400, 1383, 4526, 123, 112, "Input"],
+Cell[50929, 1508, 121, 1, 30, "Text"],
+Cell[51053, 1511, 2311, 61, 112, "Input"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
